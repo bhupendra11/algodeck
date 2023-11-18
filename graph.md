@@ -83,7 +83,7 @@ Input: graph, initial vertex
 
 Output: for each vertex: shortest path and previous node // The previous node is the one we are coming from in the shortest path. To find the shortest path between two nodes, we need to iterate backwards.  Example: A -> C => E, D, A
 
-![](res/dijkstra.png)
+![](dijkstra.png)
 
 Algorithm:
 - Init the shortest distance to MAX except for the initial node
@@ -493,5 +493,173 @@ Possible solutions:
 Directed graph (with directed edges)
 
 Undirected graph (with undirected edges)
+
+[#graph](graph.md)
+
+## Union Find code
+
+```java
+class UnionFind {
+    private int[] root;
+    // Use a rank array to record the height of each vertex, i.e., the "rank" of each vertex.
+    private int[] rank;
+
+    public UnionFind(int size) {
+        root = new int[size];
+        rank = new int[size];
+        for (int i = 0; i < size; i++) {
+            root[i] = i;
+            rank[i] = 1; // The initial "rank" of each vertex is 1, because each of them is
+                         // a standalone vertex with no connection to other vertices.
+        }
+    }
+
+	// The find function here is the same as that in the disjoint set with path compression.
+    public int find(int x) {
+        if (x == root[x]) {
+            return x;
+        }
+        return root[x] = find(root[x]);
+    }
+
+	// The union function with union by rank
+    public void union(int x, int y) {
+        int rootX = find(x);
+        int rootY = find(y);
+        if (rootX != rootY) {
+            if (rank[rootX] > rank[rootY]) {
+                root[rootY] = rootX;
+            } else if (rank[rootX] < rank[rootY]) {
+                root[rootX] = rootY;
+            } else {
+                root[rootY] = rootX;
+                rank[rootX] += 1;
+            }
+        }
+    }
+
+    public boolean connected(int x, int y) {
+        return find(x) == find(y);
+    }
+}
+```
+
+[#graph](graph.md)
+
+## Floyd Warshall All Pairs Shortest Path Algo
+
+```java
+ long dist[][] = new long[n][n];
+        //initialize dist
+        for(int i=0;i<n;i++){
+            for(int j=0;j<n;j++){
+                //no self loops
+                if(i==j){
+                    dist[i][j] = 0;
+                }
+                else {
+                    dist[i][j] = Integer.MAX_VALUE;
+                }
+
+            }
+        }
+
+        //add edges
+        for(int edge[] : edges){
+            int i = edge[0];
+            int j = edge[1];
+            int w = edge[2];
+            //edges are bi-directional
+            dist[i][j] = w;
+            dist[j][i] = w;
+        }
+
+        //perform traversal using Floyd -warshall APSP
+
+        for(int k =0; k<n;k++){ //do V iterations
+            for(int i=0;i<n;i++){
+                for(int j=0;j<n;j++){
+                    dist[i][j] = Math.min(dist[i][j], dist[i][k]+ dist[k][j]);
+                }
+            }
+        }
+```
+
+[#graph](graph.md)
+
+## Kruskal's MST using UF
+
+```java
+public class MinCostUsingKruskals {
+    public int minimumCost(int n, int[][] connections) {
+        // Lets use Kruskal's MST algorithm to do this
+        // In the algo, we keep finding the smallest weight edge and try creating the graph,
+        // if we find a redundant edge, which will cause cycle, we ignore it
+        // We can use DSUF to find redundant edge
+        UnionFind uf = new UnionFind(n+1);
+
+        //Sort all edges in increasing order of weight
+        Arrays.sort(connections, (x, y)-> x[2] - y[2]);
+
+        int cost =0;
+        int usedEdges =0;
+        for(int i=0;i<connections.length;i++){
+            int[] edge = connections[i];
+            int u = edge[0];
+            int v = edge[1];
+
+            if(!uf.isConnected(u,v)){
+                uf.union(u,v);
+                cost+= edge[2];
+                usedEdges++;
+            }
+        }
+        //If  the MST is formed with minimumn edges, total min edges to connect n nodes will be n-1
+
+        if(usedEdges != n-1) return -1;
+        return cost;
+    }
+
+    private class UnionFind{
+        int rank[];
+        int root[];
+
+        public UnionFind(int n){
+            this.rank = new int[n];
+            this.root = new int[n];
+            for(int i=0;i<n;i++){
+                root[i] = i;
+            }
+        }
+
+        int find(int x){
+            if(x == root[x]){
+                return x;
+            }
+            return root[x] = find(root[x]);
+        }
+
+        void union(int x, int y){
+            int rootX = find(x);
+            int rootY = find(y);
+
+            if(rank[rootX] > rank[rootY]){
+                root[rootY] = rootX;
+            }
+            else if(rank[rootY] > rank[rootX]){
+                root[rootX] = rootY;
+            }
+            else{
+                root[rootY] = rootX;
+                rank[rootY] += 1;
+            }
+        }
+
+        boolean isConnected(int x, int y){
+            return find(x) == find(y);
+        }
+    }
+}
+```
 
 [#graph](graph.md)

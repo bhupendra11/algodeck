@@ -102,7 +102,7 @@ Tree with each node having up to two children
 
 It's depth first so:
 
-![](res/tree.png)
+![](tree.png)
 
 - In-order: 1, 2, 3, 4, 5, 6, 7
 - Pre-order: 3, 2, 1, 5, 4, 6, 7
@@ -318,6 +318,392 @@ Use case: dictionnary (save memory)
 
 Also known as prefix tree
 
+[#tree](tree.md)
+
+## Trie Implementation for characters
+```java
+class Trie {
+
+    TrieNode head;
+
+    public Trie(){
+        this.head = new TrieNode('*');
+    }
+    
+    public void insert(String word) {
+        TrieNode curNode = head; 
+        
+        for(char c : word.toCharArray()){
+            int index = c -'a';
+            if(curNode.children[index] == null){
+                curNode.children[index] = new TrieNode(c);
+            }
+            curNode = curNode.children[index];
+        }
+        curNode.isTerminal = true;
+
+    }
+    
+    public boolean search(String word) {
+        TrieNode curNode = head; 
+        
+        for(char c : word.toCharArray()){
+            int index = c -'a';
+            if(curNode.children[index] == null){
+                return false;
+            }
+            curNode = curNode.children[index];
+        }
+        return curNode.isTerminal;   //check if this was a word
+    }
+    
+    public boolean startsWith(String prefix) {
+        TrieNode curNode = head; 
+        
+        for(char c : prefix.toCharArray()){
+            int index = c -'a';
+            if(curNode.children[index] == null){
+                return false;
+            }
+            curNode = curNode.children[index];
+        }
+        return true;
+    }
+
+    class TrieNode{
+        boolean isTerminal;
+        char ch;
+        TrieNode[] children;
+
+        TrieNode(char ch){
+            this.ch = ch;
+            this.isTerminal = false;
+            this.children = new TrieNode[26];  //as for our case the candidates are lowercase english letters only
+        } 
+    }
+}
+```
+[#tree](tree.md)
+
+## Trie Implementation with erasing
+
+```java
+class Trie_II {
+
+    TrieNode head;
+    public Trie_II() {
+        head = new TrieNode('*');
+    }
+
+    public void insert(String word) {
+        TrieNode cur = head;
+        for(char c : word.toCharArray()){
+            int index = c -'a';
+            if(cur.children[index] == null){
+                TrieNode newNode = new TrieNode(c);
+                cur.children[index] = newNode;
+            }
+            cur.children[index].prefixCount += 1;
+            cur = cur.children[index];
+        }
+        cur.wordCount += 1;
+    }
+
+    public int countWordsEqualTo(String word) {
+        TrieNode cur = head;
+        int count = 0;
+        for(char c : word.toCharArray()){
+            int index = c-'a';
+            if(cur.children[index] == null){
+                return 0;
+            }
+            cur = cur.children[index];
+        }
+        return cur.wordCount;
+    }
+
+    public int countWordsStartingWith(String prefix) {
+        TrieNode cur = head;
+        int count = 0;
+        for(char c : prefix.toCharArray()){
+            int index = c-'a';
+            if(cur.children[index] == null){
+                return 0;
+            }
+            cur = cur.children[index];
+        }
+        return cur.prefixCount;
+    }
+
+    public void erase(String word) {
+        //It is guaranteed that for any function call to erase, the string word will exist in the trie.
+        TrieNode cur = head;
+        for(char c : word.toCharArray()){
+            int index = c-'a';
+            cur.children[index].prefixCount -= 1;
+            cur = cur.children[index];
+        }
+        cur.wordCount -= 1;
+    }
+
+    class TrieNode{
+        char val;
+        TrieNode children[];
+        int wordCount;
+        int prefixCount;
+
+        TrieNode(char val){
+            this.val = val;
+            this.wordCount = 0;
+            this.prefixCount = 0;
+            this.children = new TrieNode[26];
+        }
+    }
+}
+```
+[#tree](tree.md)
+
+## Segment Tree Implementation
+
+```java
+public class SegmentTree {
+
+    // Segment tree data structure
+    static int[] segmentTree;
+
+    public SegmentTree(int n) {
+        segmentTree = new int[4 * n + 1];
+    }
+
+    /**
+     * Builds the segment tree recursively.
+     *
+     * @param stIndex The current index in the segment tree.
+     * @param arr     The input array.
+     * @param start   The start index of the current segment.
+     * @param end     The end index of the current segment.
+     */
+    static void buildSegmentTree(int stIndex, int[] arr, int start, int end) {
+        if (start == end) {
+            // Leaf node
+            segmentTree[stIndex] = arr[start];
+            return;
+        }
+
+        int mid = start + (end - start) / 2;
+
+        buildSegmentTree(2 * stIndex, arr, start, mid);
+        buildSegmentTree(2 * stIndex + 1, arr, mid + 1, end);
+
+        segmentTree[stIndex] = segmentTree[2 * stIndex] + segmentTree[2 * stIndex + 1];
+    }
+
+    /**
+     * Performs a range query on the segment tree.
+     *
+     * @param queryStart The start of the query range.
+     * @param queryEnd   The end of the query range.
+     * @param stIndex    The current index in the segment tree.
+     * @param start      The start index of the current segment.
+     * @param end        The end index of the current segment.
+     * @return The sum of elements in the specified range.
+     */
+    static int query(int queryStart, int queryEnd, int stIndex, int start, int end) {
+        if (queryStart > end || queryEnd < start) {
+            // No overlap with the current segment
+            return 0;
+        }
+
+        if (start >= queryStart && end <= queryEnd) {
+            // Total overlap with the current segment
+            return segmentTree[stIndex];
+        }
+
+        int mid = start + (end - start) / 2;
+        int leftSum = query(queryStart, queryEnd, 2 * stIndex, start, mid);
+        int rightSum = query(queryStart, queryEnd, 2 * stIndex + 1, mid + 1, end);
+
+        return leftSum + rightSum; // Partial overlap
+    }
+
+    /**
+     * Updates an element in the input array and the corresponding node in the segment tree.
+     *
+     * @param stIndex   The current index in the segment tree.
+     * @param start     The start index of the current segment.
+     * @param end       The end index of the current segment.
+     * @param position  The position of the element to update.
+     * @param newValue  The new value for the element.
+     */
+    static void updateNode(int stIndex, int start, int end, int position, int newValue) {
+        if (start == end) {
+            // Total overlap (reached a leaf node)
+            segmentTree[stIndex] = newValue;
+            return;
+        }
+        int mid = start + (end - start) / 2;
+
+        if (position <= mid) {
+            // Update the left child if the position is in the left half
+            updateNode(2 * stIndex, start, mid, position, newValue);
+        } else {
+            // Update the right child if the position is in the right half
+            updateNode(2 * stIndex + 1, mid + 1, end, position, newValue);
+        }
+
+        segmentTree[stIndex] = segmentTree[2 * stIndex] + segmentTree[2 * stIndex + 1];
+    }
+}
+```
+[#tree](tree.md)
+
+## Range Sum Mutable
+
+```java
+public class RangeSumMutable {
+
+    int segTree[];
+    int nums[];
+    int stIndex;
+
+    public RangeSumMutable(int[] nums) {
+        int n = nums.length;
+        this.nums = nums;
+        System.out.println("n = "+n );
+        segTree = new int[4*n+1];
+        this.stIndex = 1;
+
+        int start =0;
+        int end = n-1;
+
+        buildSegTree(stIndex, start, end);
+    }
+
+    private void buildSegTree(int stIndex, int start, int end){
+        if(start > end)return;
+        if(start == end){ //leafNode
+            segTree[stIndex] = nums[start];
+            return;
+        }
+
+        int mid = start + (end-start)/2;
+        buildSegTree(2*stIndex, start, mid);
+        buildSegTree(2*stIndex+1, mid+1, end);
+
+        segTree[stIndex] = segTree[2*stIndex]+ segTree[2*stIndex+1];
+    }
+
+    public void update(int index, int val) {
+        updateNode(index, val,0,nums.length-1, this.stIndex);
+    }
+
+    private void updateNode(int index, int newValue, int start, int end, int stIndex){
+        if(start > index || end <index)return;
+        if(start == end){ //total overlap
+            segTree[stIndex] = newValue;
+            return;
+        }
+
+        int mid = start + (end - start)/2;
+        updateNode(index, newValue, start, mid, 2*stIndex);
+        updateNode(index, newValue, mid+1, end, 2*stIndex+1);
+
+        segTree[stIndex] = segTree[2*stIndex] + segTree[2*stIndex+1];
+    }
+
+    public int sumRange(int left, int right) {
+        return sumRange(this.stIndex,0, nums.length-1, left, right);
+    }
+
+    private int sumRange(int stIndex,int start, int end, int qs, int qe){
+        // no overlap
+        if(qs> end || qe < start)return 0;
+
+        //total overlap
+        if(qs <= start && qe >= end){
+            return segTree[stIndex];
+        }
+
+        int mid = start + (end -start) /2;
+        int lSum = sumRange(2*stIndex, start, mid,qs,qe);
+        int rSum = sumRange(2*stIndex +1 , mid+1, end, qs, qe);
+        return lSum+ rSum;
+
+    }
+}
+
+```
+[#tree](tree.md)
+
+
+## Find LCA of BST
+```java
+public class LCAofBinaryTree {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null) return null;
+        if (p == null || root.val == q.val) return q;
+        if (q == null || root.val == p.val) return p;
+
+
+        TreeNode leftLCA = lowestCommonAncestor(root.left, p, q);
+        TreeNode rightLCA = lowestCommonAncestor(root.right, p, q);
+
+        if (leftLCA == null) return rightLCA;
+        if (rightLCA == null) return leftLCA;
+        return root;
+    }
+}
+```
+[#tree](tree.md)
+
+## ZigZag Level Order Traversal implementation
+```java
+/**
+ *   Its basically level order traversal with queue.
+ * The only change is, for every alternate level, instead of storing node values in a list,
+ * I first store them in a stack, which I later reverse into the list, so that every alternate level is shown as reverse;
+ */
+public class _8_ZigzagLevelOrderTraversal {
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        List<List<Integer>> result = new ArrayList<>();
+        if(root== null) return result;
+        Queue<TreeNode> q = new LinkedList<>();
+        q.add(root);
+
+        List<Integer> cur = new ArrayList<>();
+        boolean oddLevel = true;
+
+        while(!q.isEmpty()){
+            int length = q.size();
+            cur = new ArrayList<>();
+            Stack<Integer> reverseStack = new Stack<>(); //for storage in alternate levels, even levels
+
+            for(int i=0;i<length;i++){
+                TreeNode node = q.remove();
+                if(oddLevel){
+                    cur.add(node.val);
+                }
+                else{
+                    reverseStack.push(node.val);
+                }
+                if(node.left != null) q.add(node.left);
+                if(node.right != null)q.add(node.right);
+            }
+
+            if(!oddLevel){
+                while(!reverseStack.isEmpty()){
+                    cur.add(reverseStack.pop());
+                }
+            }
+            //chnage level flag
+            oddLevel = !oddLevel;
+            result.add(cur);
+        }
+        return result;
+    }
+}
+
+```
 [#tree](tree.md)
 
 ## Why to use BST over hash table

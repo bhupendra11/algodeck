@@ -1,4 +1,4 @@
-![](res/algodeck.png)
+![](algodeck.png)
 
 _Note: I also released the system design version: https://github.com/teivah/designdeck, an open-source collection of 230+ flash cards._
 
@@ -44,7 +44,7 @@ _Michael A. Nielsen, "Augmenting Long-term Memory"_
 Using **Anki is a great way to prepare your algorithm & data structure interview**.
 Here is a flashcard example:
 
-![](res/anki.png)
+![](anki.png)
 
 The Anki version (a clone of the +200 flashcards from this repo) is available via a one-time GitHub sponsorship tier for $19: [❤️ Sponsor](https://github.com/sponsors/teivah), One-time tab, _Access to the latest Anki deck version of Algo Deck_ tier.
 
